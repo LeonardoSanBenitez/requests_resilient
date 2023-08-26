@@ -1,4 +1,4 @@
-# requests-resilient
+# Requests Resilient
 
 Wrapper around the `requests` python library to make it resilient to network failures
 
