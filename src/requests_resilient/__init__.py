@@ -3,6 +3,8 @@ from requests import *
 import sys
 import time
 
+__version__ = "0.0.1"
+
 def get(**kwargs): #TODO: to support poitional parameters
     max_retries = 10
     wait = 1 #seconds

@@ -1,0 +1,27 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "requests_resilient"
+version = "0.1.0"
+description = "A thin wrapper for requests adding resilience to network failures"
+readme = "README.md"
+authors = [{ name = "Leonardo Benitez", email = "lsbenitezpereira@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["requests", "resilience"]
+dependencies = ["requests>=2.31.0"]
+requires-python = ">=3.7"
+
+    [project.optional-dependencies]
+    build = ["build", "twine"]
+    dev   = ["python_dotenv"]
+
+    [project.urls]
+    repository    = "https://github.com/LeonardoSanBenitez/requests_resilient"
+    documentation = "https://github.com/LeonardoSanBenitez/requests_resilient"
