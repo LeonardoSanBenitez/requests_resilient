@@ -1,0 +1,2 @@
+class MaxRetriesExceededError(Exception):
+    pass
