@@ -1,14 +1,5 @@
-from typing import Optional
-import shutil
-from requests_resilient.synchronous import get
+# This module is kept for backwards compatibility.
+# Its contents have been moved to requests_resilient.synchronous.
+from requests_resilient.synchronous import download_file
 
-
-def download_file(url, local_filename: Optional[str] = None):
-    if not local_filename:
-        local_filename = url.split('/')[-1]
-    assert type(local_filename) is str, f'local_filename must be a string, but is {type(local_filename)}'
-    with get(url=url, stream=True) as r:
-        with open(local_filename, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-
-    return local_filename
+__all__ = ["download_file"]

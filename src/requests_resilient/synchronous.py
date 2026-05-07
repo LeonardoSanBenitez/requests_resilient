@@ -1,71 +1,98 @@
+"""Module-level convenience functions mirroring the ``requests`` top-level API.
+
+These are thin wrappers around a shared :class:`ResilientSession` instance.
+For production use where you want full control over connection pools, headers,
+or auth, prefer creating your own :class:`ResilientSession` directly.
+"""
+
+from __future__ import annotations
+
+import shutil
+from pathlib import Path
+from typing import Any
+
 import requests
-import sys
-import time
-from typing import Optional, Callable
-import logging
 
-from requests_resilient.errors import MaxRetriesExceededError
+from requests_resilient.retry import RetryConfig
+from requests_resilient.session import ResilientSession
 
-
-# verify_function is a function that takes a response and returns True if the response is good
-def verify_function_default(response):
-    if response is None:
-        return False
-    elif response.status_code//100 == 5:
-        return False
-    else:
-        return True
+# Module-level default session — created lazily.
+_default_session: ResilientSession | None = None
 
 
-def _request(*args, method: Callable, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    '''
-    @param wait Is given in seconds
-    '''
-    retries = 1
-    response = None
-    while True:
-        try:
-            response = method(*args, **kwargs)
-            # from requests_toolbelt.utils import dump
-            # logging.debug(dump.dump_all(response).decode(errors="ignore")[:5000])
-            if verify_function(response) is False:
-                text = f'Verify function failed with status code {response.status_code} and message {response.text[:5000]}'
-                logging.info(text)
-                raise RuntimeError(text)
-            break
-        except Exception as e:
-            sys.stdout.flush()
-            time.sleep(wait)
-            retries += 1
-            if retries > max_retries:
-                raise MaxRetriesExceededError(f'Max retries exceeded. Last error was {e}')
-            logging.info('Retrying...')
-    return response
+def _session() -> ResilientSession:
+    global _default_session
+    if _default_session is None:
+        _default_session = ResilientSession()
+    return _default_session
 
 
-def get(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.get, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+def configure(retry_config: RetryConfig | None = None, retry_on_post: bool = False) -> None:
+    """Replace the module-level default session with new settings.
+
+    Call this once at application startup if you need non-default retry
+    behaviour for the convenience functions.
+    """
+    global _default_session
+    _default_session = ResilientSession(
+        retry_config=retry_config,
+        retry_on_post=retry_on_post,
+    )
 
 
-def post(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.post, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+# ---------------------------------------------------------------------------
+# Convenience functions
+# ---------------------------------------------------------------------------
+
+def get(url: str, **kwargs: Any) -> requests.Response:
+    """Send a GET request with automatic retry."""
+    return _session().get(url, **kwargs)
 
 
-def put(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.put, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+def post(url: str, **kwargs: Any) -> requests.Response:
+    """Send a POST request.  Retries only if ``retry_on_post=True`` in config."""
+    return _session().post(url, **kwargs)
 
 
-def patch(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.patch, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+def put(url: str, **kwargs: Any) -> requests.Response:
+    """Send a PUT request with automatic retry."""
+    return _session().put(url, **kwargs)
 
 
-def delete(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.delete, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+def patch(url: str, **kwargs: Any) -> requests.Response:
+    """Send a PATCH request."""
+    return _session().patch(url, **kwargs)
 
 
-def head(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.head, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+def delete(url: str, **kwargs: Any) -> requests.Response:
+    """Send a DELETE request with automatic retry."""
+    return _session().delete(url, **kwargs)
 
 
-def options(*args, verify_function: Callable = verify_function_default, max_retries: int = 10, wait: int = 1, **kwargs):  # type: ignore
-    return _request(*args, method=requests.options, verify_function=verify_function, max_retries=max_retries, wait=wait, **kwargs)
+def head(url: str, **kwargs: Any) -> requests.Response:
+    """Send a HEAD request with automatic retry."""
+    return _session().head(url, **kwargs)
+
+
+def options(url: str, **kwargs: Any) -> requests.Response:
+    """Send an OPTIONS request with automatic retry."""
+    return _session().options(url, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Utility: file download
+# ---------------------------------------------------------------------------
+
+def download_file(url: str, dest: str | Path | None = None) -> Path:
+    """Download *url* to *dest* (or the URL's filename in the cwd).
+
+    Streams the response to avoid loading large files into memory.
+
+    Returns:
+        The path to the downloaded file.
+    """
+    dest_path = Path(dest) if dest is not None else Path(url.split("/")[-1])
+    resp = _session().get(url, stream=True)
+    with dest_path.open("wb") as f:
+        shutil.copyfileobj(resp.raw, f)
+    return dest_path

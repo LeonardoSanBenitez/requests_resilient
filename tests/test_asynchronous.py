@@ -1,16 +1,7 @@
-import unittest
-import warnings
-warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
-from unittest import IsolatedAsyncioTestCase
+"""Placeholder for async tests.
 
-import requests_resilient
-
-
-class TestConfig(IsolatedAsyncioTestCase):
-    async def test_all(self):
-        r = await requests_resilient.async_get('https://google.com')
-        assert r.status_code == 200
-        
-        r = await requests_resilient.async_get('https://gist.githubusercontent.com/oliveratgithub/0bf11a9aff0d6da7b46f1490f86a71eb/raw/')
-        assert r.status_code == 200
-        assert type(r.json()) == dict
+Async support (aiohttp-based) was removed in v0.3.0 in favour of a clean
+synchronous-first design.  Use asyncio.to_thread() or httpx for async use
+cases.  This file is kept to mark the intentional removal and to avoid
+confusing pytest discovery.
+"""

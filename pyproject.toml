@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "requests_resilient"
-version = "0.2.0"
-description = "A thin wrapper for requests adding resilience to network failures"
+version = "0.3.0"
+description = "Automatic retry and resilience for the requests library"
 readme = "README.md"
 authors = [{ name = "Leonardo Benitez", email = "lsbenitezpereira@gmail.com" }]
 license = { file = "LICENSE" }
@@ -13,15 +13,31 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
-keywords = ["requests", "resilience"]
+keywords = ["requests", "resilience", "retry", "http", "backoff"]
 dependencies = ["requests>=2.31.0"]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 
     [project.optional-dependencies]
+    dev = [
+        "pytest>=8.0",
+        "mypy>=1.10",
+        "types-requests>=2.31",
+    ]
     build = ["build", "twine"]
-    dev   = ["python_dotenv"]
 
     [project.urls]
     repository    = "https://github.com/LeonardoSanBenitez/requests_resilient"
     documentation = "https://github.com/LeonardoSanBenitez/requests_resilient"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+ignore_missing_imports = true
