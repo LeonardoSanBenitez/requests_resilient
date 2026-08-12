@@ -68,11 +68,26 @@ class ResilientSession(requests.Session):
 
         last_exc: BaseException | None = None
         response: requests.Response | None = None
+        # The response whose Retry-After should steer the next wait. Deliberately
+        # separate from `response`: after a connection error there is no fresh
+        # response, and the previous one's header must not be reused.
+        hint_source: requests.Response | None = None
 
         for attempt in range(cfg.max_retries):
             # Wait before retries (not before the first attempt).
             if attempt > 0:
-                wait = cfg.wait_for_attempt(attempt)
+                wait = cfg.wait_before_retry(attempt, hint_source)
+                if wait is None:
+                    # Server asked to wait longer than this client is willing to
+                    # block. Hand the response back rather than sleeping on it.
+                    logger.debug(
+                        "Retry-After on %s %s exceeds retry_after_max=%.1fs — returning response",
+                        upper,
+                        url,
+                        cfg.retry_after_max,
+                    )
+                    assert response is not None  # hint_source is set only from a response
+                    return response
                 logger.debug(
                     "Retry %d/%d for %s %s — waiting %.2fs",
                     attempt,
@@ -87,12 +102,15 @@ class ResilientSession(requests.Session):
                 response = super().request(method, url, **kwargs)
             except (requests.ConnectionError, requests.Timeout) as exc:
                 last_exc = exc
+                hint_source = None
                 if not (retryable_method and cfg.retry_on_exception):
                     raise MaxRetriesExceededError(
                         f"Request {upper} {url_str} failed: {exc}", last_exception=exc
                     ) from exc
                 logger.debug("Connection/timeout error on attempt %d: %s", attempt + 1, exc)
                 continue
+
+            hint_source = response
 
             if not cfg.is_retryable(response):
                 return response
