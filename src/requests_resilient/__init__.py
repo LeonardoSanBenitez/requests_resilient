@@ -16,7 +16,7 @@ Quick start::
 """
 
 from requests_resilient.errors import MaxRetriesExceededError
-from requests_resilient.retry import RetryConfig
+from requests_resilient.retry import RetryConfig, parse_retry_after
 from requests_resilient.session import ResilientSession
 from requests_resilient.synchronous import (
     configure,
@@ -34,6 +34,7 @@ __all__ = [
     # Core classes
     "ResilientSession",
     "RetryConfig",
+    "parse_retry_after",
     # Errors
     "MaxRetriesExceededError",
     # Convenience functions
