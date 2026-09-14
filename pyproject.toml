@@ -13,20 +13,20 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 keywords = ["requests", "resilience", "retry", "http", "backoff"]
 dependencies = ["requests>=2.31.0"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
     [project.optional-dependencies]
     dev = [
         "pytest>=8.0",
         "mypy>=1.10",
         "types-requests>=2.31",
+        "ruff>=0.6",
     ]
     build = ["build", "twine"]
 
@@ -34,10 +34,21 @@ requires-python = ">=3.9"
     repository    = "https://github.com/LeonardoSanBenitez/requests_resilient"
     documentation = "https://github.com/LeonardoSanBenitez/requests_resilient"
 
+[tool.setuptools.package-data]
+requests_resilient = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = true
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 190
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E226"]

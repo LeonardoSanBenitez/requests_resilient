@@ -44,6 +44,7 @@ def configure(retry_config: RetryConfig | None = None, retry_on_post: bool = Fal
 # Convenience functions
 # ---------------------------------------------------------------------------
 
+
 def get(url: str, **kwargs: Any) -> requests.Response:
     """Send a GET request with automatic retry."""
     return _session().get(url, **kwargs)
@@ -82,6 +83,7 @@ def options(url: str, **kwargs: Any) -> requests.Response:
 # ---------------------------------------------------------------------------
 # Utility: file download
 # ---------------------------------------------------------------------------
+
 
 def download_file(url: str, dest: str | Path | None = None) -> Path:
     """Download *url* to *dest* (or the URL's filename in the cwd).

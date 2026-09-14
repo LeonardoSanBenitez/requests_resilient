@@ -42,9 +42,7 @@ class TestResilientSessionSuccess:
         mock_req.assert_called_once()
 
     def test_retries_on_500_then_succeeds(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False))
         fail = _make_response(500)
         ok = _make_response(200)
 
@@ -56,9 +54,7 @@ class TestResilientSessionSuccess:
         assert mock_req.call_count == 2
 
     def test_retries_on_429(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False))
         rate_limited = _make_response(429)
         ok = _make_response(200)
 
@@ -70,9 +66,7 @@ class TestResilientSessionSuccess:
 
     def test_exhausts_retries_returns_last_response(self) -> None:
         """When all retries are exhausted and we have a response, return it."""
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=2, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=2, backoff_base=0.0, jitter=False))
         always_500 = _make_response(500)
 
         with mock.patch.object(requests.Session, "request", return_value=always_500):
@@ -84,21 +78,15 @@ class TestResilientSessionSuccess:
 
 class TestResilientSessionExceptions:
     def test_connection_error_raises_after_retries(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=2, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=2, backoff_base=0.0, jitter=False))
 
-        with mock.patch.object(
-            requests.Session, "request", side_effect=requests.ConnectionError("down")
-        ):
+        with mock.patch.object(requests.Session, "request", side_effect=requests.ConnectionError("down")):
             with mock.patch("time.sleep"):
                 with pytest.raises(MaxRetriesExceededError):
                     session.get("https://example.com")
 
     def test_timeout_retried_then_succeeds(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False))
         ok = _make_response(200)
 
         with mock.patch.object(
@@ -113,13 +101,9 @@ class TestResilientSessionExceptions:
 
     def test_connection_error_not_retried_for_non_idempotent_method(self) -> None:
         """POST is not retried on connection error unless retry_on_post=True."""
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=3, backoff_base=0.0, jitter=False))
 
-        with mock.patch.object(
-            requests.Session, "request", side_effect=requests.ConnectionError("down")
-        ):
+        with mock.patch.object(requests.Session, "request", side_effect=requests.ConnectionError("down")):
             with pytest.raises(MaxRetriesExceededError):
                 session.post("https://example.com", json={})
 
@@ -141,9 +125,7 @@ class TestResilientSessionExceptions:
         assert resp.status_code == 200
 
     def test_max_retries_exceeded_error_carries_last_exception(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=2, backoff_base=0.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=2, backoff_base=0.0, jitter=False))
         exc = requests.ConnectionError("network down")
 
         with mock.patch.object(requests.Session, "request", side_effect=exc):
@@ -175,9 +157,7 @@ class TestResilientSessionBackoff:
         assert mock_sleep.call_count == 2
 
     def test_no_sleep_before_first_attempt(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=1, backoff_base=5.0, jitter=False)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=1, backoff_base=5.0, jitter=False))
         ok = _make_response(200)
 
         with mock.patch.object(requests.Session, "request", return_value=ok):

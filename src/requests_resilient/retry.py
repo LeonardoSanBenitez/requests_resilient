@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import Callable
 
 import requests
 
@@ -106,9 +106,7 @@ class RetryConfig:
     backoff_factor: float = 2.0
     backoff_max: float = 60.0
     jitter: bool = True
-    is_retryable: Callable[[requests.Response], bool] = field(
-        default_factory=lambda: _default_is_retryable
-    )
+    is_retryable: Callable[[requests.Response], bool] = field(default_factory=lambda: _default_is_retryable)
     retry_on_exception: bool = True
     respect_retry_after: bool = True
     retry_after_max: float = 120.0

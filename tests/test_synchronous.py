@@ -10,7 +10,6 @@ import pytest
 import requests
 
 import requests_resilient
-from requests_resilient.errors import MaxRetriesExceededError
 from requests_resilient.retry import RetryConfig
 from requests_resilient.session import ResilientSession
 
@@ -26,6 +25,7 @@ class TestConvenienceFunctions:
     def setup_method(self) -> None:
         # Reset the module-level session between tests.
         import requests_resilient.synchronous as sync_mod
+
         sync_mod._default_session = None
 
     def test_get_returns_response(self) -> None:
@@ -74,6 +74,7 @@ class TestConvenienceFunctions:
 class TestConfigure:
     def setup_method(self) -> None:
         import requests_resilient.synchronous as sync_mod
+
         sync_mod._default_session = None
 
     def test_configure_sets_custom_retry_config(self) -> None:
@@ -81,12 +82,14 @@ class TestConfigure:
         requests_resilient.configure(retry_config=cfg)
 
         import requests_resilient.synchronous as sync_mod
+
         assert sync_mod._default_session is not None
         assert sync_mod._default_session.retry_config.max_retries == 7
 
     def test_configure_retry_on_post(self) -> None:
         requests_resilient.configure(retry_on_post=True)
         import requests_resilient.synchronous as sync_mod
+
         assert sync_mod._default_session is not None
         assert sync_mod._default_session.retry_on_post is True
 
@@ -94,6 +97,7 @@ class TestConfigure:
 class TestDownloadFile:
     def setup_method(self) -> None:
         import requests_resilient.synchronous as sync_mod
+
         sync_mod._default_session = None
 
     def test_downloads_file(self, tmp_path: Path) -> None:

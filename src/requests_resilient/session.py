@@ -62,9 +62,7 @@ class ResilientSession(requests.Session):
         cfg = self.retry_config
         upper = method.upper()
         url_str: str = url.decode() if isinstance(url, bytes) else url
-        retryable_method = upper in _IDEMPOTENT_METHODS or (
-            self.retry_on_post and upper in {"POST", "PATCH"}
-        )
+        retryable_method = upper in _IDEMPOTENT_METHODS or (self.retry_on_post and upper in {"POST", "PATCH"})
 
         last_exc: BaseException | None = None
         response: requests.Response | None = None
@@ -104,9 +102,7 @@ class ResilientSession(requests.Session):
                 last_exc = exc
                 hint_source = None
                 if not (retryable_method and cfg.retry_on_exception):
-                    raise MaxRetriesExceededError(
-                        f"Request {upper} {url_str} failed: {exc}", last_exception=exc
-                    ) from exc
+                    raise MaxRetriesExceededError(f"Request {upper} {url_str} failed: {exc}", last_exception=exc) from exc
                 logger.debug("Connection/timeout error on attempt %d: %s", attempt + 1, exc)
                 continue
 

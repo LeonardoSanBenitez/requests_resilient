@@ -94,9 +94,7 @@ class TestWaitBeforeRetry:
         assert cfg.wait_before_retry(attempt=1, response=headerless) == 4.0
 
     def test_respect_flag_disables_the_header(self) -> None:
-        cfg = RetryConfig(
-            backoff_base=2.0, backoff_factor=1.0, jitter=False, respect_retry_after=False
-        )
+        cfg = RetryConfig(backoff_base=2.0, backoff_factor=1.0, jitter=False, respect_retry_after=False)
         resp = _make_response(429, {"Retry-After": "600"})
         assert cfg.wait_before_retry(attempt=1, response=resp) == 2.0
 
@@ -126,15 +124,11 @@ class TestSessionHonoursRetryAfter:
         sleeper.assert_called_once_with(5.0)
 
     def test_returns_response_instead_of_blocking_past_the_cap(self) -> None:
-        session = ResilientSession(
-            retry_config=RetryConfig(max_retries=3, retry_after_max=60.0)
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=3, retry_after_max=60.0))
         throttled = _make_response(429, {"Retry-After": "3600"})
         ok = _make_response(200)
 
-        with mock.patch.object(
-            requests.Session, "request", side_effect=[throttled, ok]
-        ) as mock_req:
+        with mock.patch.object(requests.Session, "request", side_effect=[throttled, ok]) as mock_req:
             with mock.patch("time.sleep") as sleeper:
                 resp = session.get("https://example.com")
 
@@ -151,11 +145,7 @@ class TestSessionHonoursRetryAfter:
         before attempt 2 comes from the header; the wait before attempt 3 must come
         from the backoff, because the attempt that just failed produced no response.
         """
-        session = ResilientSession(
-            retry_config=RetryConfig(
-                max_retries=3, backoff_base=1.0, backoff_factor=1.0, jitter=False
-            )
-        )
+        session = ResilientSession(retry_config=RetryConfig(max_retries=3, backoff_base=1.0, backoff_factor=1.0, jitter=False))
         throttled = _make_response(429, {"Retry-After": "5"})
         ok = _make_response(200)
 

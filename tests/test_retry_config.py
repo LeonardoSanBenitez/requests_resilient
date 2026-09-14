@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import math
 from unittest import mock
-
-import pytest
 
 from requests_resilient.retry import RetryConfig, _default_is_retryable
 
@@ -52,9 +49,9 @@ class TestRetryConfigWait:
 
     def test_exponential_backoff(self) -> None:
         cfg = RetryConfig(backoff_base=1.0, backoff_factor=2.0, backoff_max=100.0, jitter=False)
-        assert cfg.wait_for_attempt(1) == 1.0   # base * 2^0
-        assert cfg.wait_for_attempt(2) == 2.0   # base * 2^1
-        assert cfg.wait_for_attempt(3) == 4.0   # base * 2^2
+        assert cfg.wait_for_attempt(1) == 1.0  # base * 2^0
+        assert cfg.wait_for_attempt(2) == 2.0  # base * 2^1
+        assert cfg.wait_for_attempt(3) == 4.0  # base * 2^2
         assert cfg.wait_for_attempt(4) == 8.0
 
     def test_backoff_max_caps_wait(self) -> None:
