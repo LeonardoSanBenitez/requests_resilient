@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a bug in requests_resilient
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened and what did you expect
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal runnable script that shows the problem
+      render: python
+      description: Please provide a minimal, runnable script that reproduces the issue. It should run on its own, without private services, if at all possible.
+    validations:
+      required: true
+  - type: input
+    id: library-version
+    attributes:
+      label: requests_resilient version
+      description: Output of `python -m pip show requests_resilient`, version line
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python --version`
+    validations:
+      required: true
+  - type: input
+    id: requests-version
+    attributes:
+      label: requests version
+      description: Output of `python -m pip show requests`, version line
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Traceback or log output
+      render: text
+    validations:
+      required: false
