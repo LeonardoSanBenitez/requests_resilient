@@ -5,6 +5,13 @@ This project follows [Semantic Versioning](https://semver.org/): patch releases 
 minor releases add to the public API without changing what already exists, and major releases may
 change it with a documented migration.
 
+## Unreleased
+
+### Fixed
+- Credentials in a URL's user-info part (`https://user:password@host/`) no longer appear in debug
+  log records or in `MaxRetriesExceededError` messages; they are replaced by `***@`. The request
+  itself is sent unchanged.
+
 ## 0.3.1 — 2026-08-12
 
 ### Added

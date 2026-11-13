@@ -17,6 +17,28 @@ logger = logging.getLogger(__name__)
 _IDEMPOTENT_METHODS = frozenset({"GET", "HEAD", "OPTIONS", "PUT", "DELETE"})
 
 
+def redact_url(url: str) -> str:
+    """Return ``url`` with any user-info (``user:password@``) replaced by ``***@``.
+
+    Used for every URL this library writes into a log record or an exception
+    message, so credentials embedded in a URL never leave the request itself.
+    Anything that does not parse as ``scheme://authority`` is returned unchanged.
+    """
+    scheme, sep, rest = url.partition("://")
+    if not sep:
+        return url
+    authority_end = len(rest)
+    for ch in "/?#":
+        pos = rest.find(ch)
+        if pos != -1:
+            authority_end = min(authority_end, pos)
+    authority, tail = rest[:authority_end], rest[authority_end:]
+    if "@" not in authority:
+        return url
+    host = authority.rpartition("@")[2]
+    return f"{scheme}://***@{host}{tail}"
+
+
 class ResilientSession(requests.Session):
     """A ``requests.Session`` that transparently retries failed requests.
 
@@ -62,6 +84,7 @@ class ResilientSession(requests.Session):
         cfg = self.retry_config
         upper = method.upper()
         url_str: str = url.decode() if isinstance(url, bytes) else url
+        safe_url = redact_url(url_str)  # the only form of the URL that may be logged
         retryable_method = upper in _IDEMPOTENT_METHODS or (self.retry_on_post and upper in {"POST", "PATCH"})
 
         last_exc: BaseException | None = None
@@ -81,7 +104,7 @@ class ResilientSession(requests.Session):
                     logger.debug(
                         "Retry-After on %s %s exceeds retry_after_max=%.1fs — returning response",
                         upper,
-                        url,
+                        safe_url,
                         cfg.retry_after_max,
                     )
                     assert response is not None  # hint_source is set only from a response
@@ -91,7 +114,7 @@ class ResilientSession(requests.Session):
                     attempt,
                     cfg.max_retries - 1,
                     upper,
-                    url,
+                    safe_url,
                     wait,
                 )
                 time.sleep(wait)
@@ -102,7 +125,7 @@ class ResilientSession(requests.Session):
                 last_exc = exc
                 hint_source = None
                 if not (retryable_method and cfg.retry_on_exception):
-                    raise MaxRetriesExceededError(f"Request {upper} {url_str} failed: {exc}", last_exception=exc) from exc
+                    raise MaxRetriesExceededError(f"Request {upper} {safe_url} failed: {exc}", last_exception=exc) from exc
                 logger.debug("Connection/timeout error on attempt %d: %s", attempt + 1, exc)
                 continue
 
@@ -127,6 +150,6 @@ class ResilientSession(requests.Session):
         if response is not None:
             return response
         raise MaxRetriesExceededError(
-            f"All {cfg.max_retries} attempts failed for {upper} {url_str}",
+            f"All {cfg.max_retries} attempts failed for {upper} {safe_url}",
             last_exception=last_exc,
         )
