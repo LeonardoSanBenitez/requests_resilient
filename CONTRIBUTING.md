@@ -1,5 +1,10 @@
 # Contributing
 
+Thanks for helping. Everyone taking part is expected to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md). Contributions written with AI tools are welcome; see
+[docs/policies/ai.md](docs/policies/ai.md) for what that means here, for you and for the
+maintainer.
+
 ## Setting up
 
 Clone the repository, create a virtual environment, then install the development dependencies:
