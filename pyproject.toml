@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["setuptools>=61.0.0", "wheel"]
+requires      = ["setuptools>=77.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,9 +8,9 @@ version = "0.3.1"
 description = "Automatic retry and resilience for the requests library"
 readme = "README.md"
 authors = [{ name = "Leonardo Benitez", email = "lsbenitezpereira@gmail.com" }]
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -34,6 +34,8 @@ requires-python = ">=3.10"
     [project.urls]
     repository    = "https://github.com/LeonardoSanBenitez/requests_resilient"
     documentation = "https://github.com/LeonardoSanBenitez/requests_resilient"
+    changelog     = "https://github.com/LeonardoSanBenitez/requests_resilient/blob/main/CHANGELOG.md"
+    issues        = "https://github.com/LeonardoSanBenitez/requests_resilient/issues"
 
 [tool.setuptools.package-data]
 requests_resilient = ["py.typed"]
