@@ -1,0 +1,16 @@
+name: Question
+description: Ask a question about using requests_resilient
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: What you already tried, versions
+    validations:
+      required: false
